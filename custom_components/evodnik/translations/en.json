@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "eVodnik local proxy",
-        "description": "Configure the local listener and vendor endpoint. The vendor and device can be offline. MQTT publication uses your existing Home Assistant MQTT integration.",
+        "description": "Configure the local listener and vendor endpoint. The vendor and device can be offline. MQTT publication uses your existing Home Assistant MQTT integration and adds a device with open/close control and sensors.",
         "data": {
           "target_host": "Target host",
           "target_port": "Target TCP port",
@@ -16,7 +16,7 @@
       },
       "reconfigure": {
         "title": "Reconfigure eVodnik",
-        "description": "Saving changes restarts the proxy. The device must reconnect.",
+        "description": "Saving changes restarts the proxy. The device must reconnect. MQTT publication includes discovery, open/close control, and sensors.",
         "data": {
           "target_host": "Target host",
           "target_port": "Target TCP port",

@@ -22,8 +22,9 @@ Firmware acceptance still needs a controlled device test; see
    These fields have no deployment defaults. The listener address defaults to
    `0.0.0.0` (all IPv4 interfaces); an explicit local IPv4 or IPv6 address is
    supported. Supply your own network redirection separately.
-5. Optionally enable MQTT publication and choose a unique topic prefix. MQTT
-   must be configured separately in Home Assistant; its credentials are reused.
+5. Optionally enable **Publish state to MQTT** and choose a unique topic prefix.
+   This also enables MQTT discovery and valve control. MQTT must be configured
+   separately in Home Assistant; its connection and credentials are reused.
 
 Saving configuration does not contact the vendor. A port conflict is reported
 in the form. Each entry accepts one device; another connection replaces the
@@ -93,18 +94,41 @@ the integration does not guess missing consumption. A reset that occurs and
 catches up past the last observed count while HA is offline cannot be detected
 from the counter alone. A disconnected or stale device makes the sensor unavailable.
 
-## MQTT mirror
+## MQTT discovery and control
 
 Publication is optional and uses HA's existing MQTT connection. Broker failure
-does not stop the listener or native controls. No MQTT command topic or discovery
-entity is created. There is no command feedback loop.
+does not stop the listener or native controls. With **Publish state to MQTT**
+enabled, the integration creates an **eVodnik MQTT** device under
+**Settings → Devices & services → MQTT**. It has a **Water** valve with open and
+close actions, **Water total**, **Water meter**, **Device connected**, and
+**Cloud connected**. These mirror the existing native eVodnik entities; choose
+either set for dashboards and automations. MQTT discovery must be enabled in
+HA's MQTT settings. The configured discovery prefix is respected.
 
-For prefix `evodnik`, both topics use QoS 1 and retained messages:
+Already using MQTT publication? Update through HACS and restart Core. Existing
+settings and meter calibration are preserved; discovery starts automatically.
+No additional broker credentials, YAML, MAC address, or serial number are needed.
 
-| Topic | Payload |
-|---|---|
-| `evodnik/availability` | `online` only with a current valve report; otherwise `offline` |
-| `evodnik/state` | JSON report with availability, valve, timestamps, counter, and connection flags |
+For prefix `evodnik`:
+
+| Topic | Payload | Delivery |
+|---|---|---|
+| `evodnik/availability` | `online` only with a current valve report; otherwise `offline` | QoS 1, retained |
+| `evodnik/bridge_availability` | Whether the MQTT publisher is running | QoS 1, retained |
+| `evodnik/state` | JSON report with valve, timestamps, counters, and connection flags | QoS 1, retained |
+| `evodnik/valve/set` | Exactly `OPEN` or `CLOSE` | Send QoS 0, **retain false** |
+
+MQTT valve commands enter the same local proxy queue as native actions. They
+are not sent to the vendor. The resulting state comes from the device's status
+response; an acknowledgment alone does not confirm a change. Vendor commands
+update both sets of entities without publishing another command.
+
+Retained command replays, unknown payloads, and commands received while the device is
+unavailable are ignored. Only one MQTT command may be pending at a time;
+additional messages are discarded until it completes. Failed commands are
+logged without payloads or deployment information and are never retried.
+No command is saved for a later device connection. A write already sent to the
+device cannot be recalled if MQTT disconnects while confirmation is pending.
 
 Synthetic example:
 
@@ -123,15 +147,27 @@ Synthetic example:
 }
 ```
 
-On MQTT reconnect, the mirror first invalidates earlier retained state and
-requests a fresh device snapshot. It becomes available only after a device
-report observed since that connection. Normal unload publishes offline/unknown.
+On MQTT reconnect or HA's configured birth message, the publisher invalidates
+earlier state, republishes discovery, and requests a fresh snapshot. Valve
+availability requires a device report observed since that event. Normal unload
+publishes offline/unknown. Connectivity sensors remain available while the
+publisher is running so a disconnected device or vendor can be shown as off.
+
+Discovery uses a stable, locally generated config-entry ID. Reloads and topic
+prefix changes preserve entity IDs. Turning MQTT publication off or deleting
+the integration removes discovery and retained state. Cleanup retries after
+broker recovery and is saved locally for the next eVodnik setup. If you remove
+the last entry while MQTT is offline and then stop using the integration,
+clear its retained discovery topics manually when the broker returns.
 
 MQTT consumers must check `available`, `valid_until`, and the HA MQTT connection's
 configured birth/will topic (normally `homeassistant/status`). A process crash or
 power loss cannot publish a final offline message on the integration's topic;
-retained `online` alone is insufficient. This integration does not alter HA's
-broker credentials, will configuration, or other integrations' topics.
+retained `online` alone is insufficient. Discovered entities also listen for HA's
+configured will; only a new proxy report restores their availability. Sensors
+expire if reports stop. This integration does not alter HA's broker credentials,
+will configuration, or other integrations' topics. Keep the will configured if
+other MQTT consumers must detect a Core crash.
 
 `water_meter_liters` is `null` until the meter is configured and while its
 reading cannot be verified. `meter_calibration_status` is `not_configured`,
@@ -208,4 +244,6 @@ See [validation and device handover](docs/validation.md) for the verification sc
 
 References: [HACS integration layout](https://www.hacs.xyz/docs/publish/integration/),
 [custom repositories](https://www.hacs.xyz/docs/faq/custom_repositories/),
-[HA valve entities](https://developers.home-assistant.io/docs/core/entity/valve/).
+[HA valve entities](https://developers.home-assistant.io/docs/core/entity/valve/),
+[MQTT discovery](https://www.home-assistant.io/integrations/mqtt/#mqtt-discovery),
+[MQTT valve](https://www.home-assistant.io/integrations/valve.mqtt/).

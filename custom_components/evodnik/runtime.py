@@ -17,6 +17,7 @@ class Runtime:
 
     def __init__(self, hass: HomeAssistant, settings: Settings, entry_id: str) -> None:
         self.hass = hass
+        self.entry_id = entry_id
         self.listeners: set[Callable[[], None]] = set()
         self.meter = Meter(hass, entry_id)
         self.proxy = Proxy(settings, self._proxy_changed)

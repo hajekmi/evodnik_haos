@@ -44,6 +44,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: EvodnikConfigEntry) -> b
 
             runtime.publisher = Publisher(hass, runtime, data[CONF_MQTT_PREFIX])
             runtime.publisher.start()
+        else:
+            from .mqtt_discovery import async_get_registry
+
+            registry = await async_get_registry(hass)
+            await registry.set_topics(entry.entry_id, [])
         await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     except BaseException:
         await runtime.stop()
@@ -65,5 +70,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: EvodnikConfigEntry) -> 
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: EvodnikConfigEntry) -> None:
-    """Remove this entry's local meter calibration when the integration is deleted."""
+    """Remove calibration and MQTT discovery when the integration is deleted."""
+    from .mqtt_discovery import async_get_registry
+
+    registry = await async_get_registry(hass)
+    await registry.set_topics(entry.entry_id, [])
     await meter_store(hass, entry.entry_id).async_remove()
