@@ -1,13 +1,15 @@
 # Validation and device handover
 
 The automated suite uses synthetic loopback TCP peers and Home Assistant Core
-2026.9.1 with Python 3.14.7. Version 0.2.0 passed **59 tests**, with
+2026.9.1 with Python 3.14.7. Version 0.2.1 passed **60 tests**, with
 **95% statement coverage** across the integration; Ruff checks and formatting
 also passed. The suite covers framing, CRC, escaping, exact forwarding, local and cloud
 commands, response ownership, tag collisions, unconfirmed writes, connection
 replacement, incomplete/corrupt replies, queue overflow, timeouts, discarded
 stale messages, cloud recovery, UI configuration, reconfiguration, native
 entities, MQTT outages/recovery, and listener/task cleanup.
+An additional regression test verifies that the first counter snapshot is read
+even when the host's uptime is shorter than the regular polling interval.
 
 Meter tests cover zero and existing starting readings, calibration against a
 fresh snapshot, duplicate messages, consumption during disconnects, persistence

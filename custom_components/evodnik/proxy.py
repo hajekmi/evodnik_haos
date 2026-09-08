@@ -79,8 +79,8 @@ class Session:
     current: tuple[Frame, asyncio.Future[Frame]] | None = None
     active_request: Request | None = None
     tag: int = 0x80
-    last_status: float = 0.0
-    last_snapshot: float = 0.0
+    last_status: float | None = None
+    last_snapshot: float | None = None
     tasks: list[asyncio.Task] = field(default_factory=list)
 
 
@@ -409,9 +409,15 @@ class Proxy:
         while self._is_current(session):
             now = time.monotonic()
             frame = None
-            if now - session.last_snapshot >= self.settings.snapshot_interval:
+            if (
+                session.last_snapshot is None
+                or now - session.last_snapshot >= self.settings.snapshot_interval
+            ):
                 frame = read_snapshot(self._next_tag(session))
-            elif now - session.last_status >= self.settings.poll_interval:
+            elif (
+                session.last_status is None
+                or now - session.last_status >= self.settings.poll_interval
+            ):
                 frame = read_status(self._next_tag(session))
             if frame:
                 try:

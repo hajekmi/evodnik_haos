@@ -1,9 +1,11 @@
 """Exercise actual TCP streams, failures, and session isolation on loopback."""
 
 import asyncio
+from types import SimpleNamespace
 
 import pytest
 
+from custom_components.evodnik import proxy as proxy_module
 from custom_components.evodnik.protocol import encode, read_snapshot, read_status, valve_command
 from custom_components.evodnik.proxy import (
     CommandNotConfirmed,
@@ -63,6 +65,20 @@ async def test_local_commands_and_counter_with_cloud_down(make_proxy):
         assert proxy.state.valve == "open"
         device.counter = 43
         await eventually(lambda: proxy.state.total_liters == 43)
+    finally:
+        await device.close()
+
+
+async def test_initial_snapshot_does_not_depend_on_host_uptime(make_proxy, monkeypatch):
+    monkeypatch.setattr(proxy_module, "time", SimpleNamespace(monotonic=lambda: 0.1))
+    proxy, cloud = await make_proxy(poll_interval=45, snapshot_interval=300)
+    await cloud.stop()
+    device = await Device.connect(proxy.bound_port)
+    try:
+        await eventually(lambda: proxy.state.total_liters == 42)
+        assert device.requests[0].opcode == 0x31
+        assert device.requests[0].address == 0
+        assert device.requests[0].length == 128
     finally:
         await device.close()
 

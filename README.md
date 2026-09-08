@@ -57,8 +57,9 @@ An unconfirmed local command returns an error; writes are never retried
 automatically. HA disables the native control while the device is unavailable.
 The reported state is **not proven to represent mechanically verified position**.
 
-The proxy requests status about every 45 seconds and a counter snapshot about
-every 5 minutes, using fresh forwarded responses to avoid redundant polling.
+The proxy reads a counter snapshot after connecting, then requests status about
+every 45 seconds and a counter snapshot about every 5 minutes, using fresh
+forwarded responses to avoid redundant polling.
 Valve reports expire after 120 seconds; counter readings expire after 600
 seconds. The counter includes an `observed_at` attribute. Counter rollover,
 resets, and upper bits remain unverified, so this version does not expose a
