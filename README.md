@@ -182,6 +182,28 @@ root and review all proposed files for private data before committing. Do not
 publish the surrounding research workspace. Keep GitHub issues enabled, set a
 description and relevant repository topics, and run CI before a release.
 
+For a numbered release, set the same version in
+`custom_components/evodnik/manifest.json` and `pyproject.toml`, and add English
+release notes in `docs/releases/vX.Y.Z.md`. Commit and push those changes to
+`main`, then create and push the matching annotated tag:
+
+```bash
+git tag -a vX.Y.Z -m "Release vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+The tag push runs validation. After tests, hassfest, and HACS pass, CI checks
+the version and notes, then creates the GitHub Release using its built-in
+`GITHUB_TOKEN`. Only the release job has repository contents write permission.
+HACS installs the integration from the release's tagged source; no separate
+ZIP asset or personal token is required. Published tags should not be moved;
+make fixes in a new version.
+
+Dependabot checks GitHub Actions and development Python dependencies monthly.
+It opens branches and pull requests for proposed updates. Review their changes
+and CI results before merging; this repository does not configure automatic
+merging. These branches do not change the installed integration.
+
 See [validation and device handover](docs/validation.md) for the verification scope.
 
 References: [HACS integration layout](https://www.hacs.xyz/docs/publish/integration/),
