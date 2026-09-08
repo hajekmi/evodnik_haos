@@ -200,13 +200,9 @@ ZIP asset or personal token is required. Published tags should not be moved;
 make fixes in a new version.
 
 Dependabot checks GitHub Actions and development Python dependencies monthly.
-After a Dependabot pull request passes tests, hassfest, and HACS against the
-current base, a separate workflow merges it and removes the merged branch.
-Only changes to existing action SHA pins or pinned package versions in
-`requirements-dev.txt` qualify. Failed checks, stale revisions, conflicts, and
-changes to other content leave the pull request open for investigation.
-The merge workflow runs trusted default-branch code and reads proposed files
-only as data. Dependency maintenance does not publish a new integration release.
+It opens branches and pull requests for proposed updates. Review their changes
+and CI results before merging; this repository does not configure automatic
+merging. These branches do not change the installed integration.
 
 See [validation and device handover](docs/validation.md) for the verification scope.
 
