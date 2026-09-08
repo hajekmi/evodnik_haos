@@ -1,0 +1,3 @@
+- Write all repository content in English.
+- Keep private captures, real deployment endpoints, device identities, and operational data outside this repository.
+- Use synthetic protocol fixtures and local simulators for tests. Never send test commands to a physical device or a public vendor endpoint.

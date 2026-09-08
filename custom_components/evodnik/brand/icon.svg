@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>Local water valve proxy</title>
+  <rect x="16" y="16" width="224" height="224" rx="48" fill="#103b52"/>
+  <path d="M52 141h152" stroke="#65d6ea" stroke-width="26" stroke-linecap="round"/>
+  <path d="M128 79v54M94 75h68" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="128" cy="141" r="30" fill="#103b52" stroke="#ffffff" stroke-width="12"/>
+  <path d="M179 179c-12 16-16 22-16 29a16 16 0 0 0 32 0c0-7-4-13-16-29z" fill="#65d6ea"/>
+</svg>

@@ -1,0 +1,83 @@
+{
+  "title": "eVodnik",
+  "config": {
+    "step": {
+      "user": {
+        "title": "eVodnik local proxy",
+        "description": "Configure the local listener and vendor endpoint. The vendor and device can be offline. MQTT publication uses your existing Home Assistant MQTT integration.",
+        "data": {
+          "target_host": "Target host",
+          "target_port": "Target TCP port",
+          "listen_port": "Local listener port",
+          "listen_host": "Listener IP address",
+          "mqtt_enabled": "Publish state to MQTT",
+          "mqtt_prefix": "MQTT topic prefix"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure eVodnik",
+        "description": "Saving changes restarts the proxy. The device must reconnect.",
+        "data": {
+          "target_host": "Target host",
+          "target_port": "Target TCP port",
+          "listen_port": "Local listener port",
+          "listen_host": "Listener IP address",
+          "mqtt_enabled": "Publish state to MQTT",
+          "mqtt_prefix": "MQTT topic prefix"
+        }
+      }
+    },
+    "error": {
+      "listener_in_use": "Cannot bind this listener. Check the address, port, and other entries.",
+      "mqtt_prefix_in_use": "Another eVodnik entry uses this MQTT prefix.",
+      "proxy_loop": "The target must not point back to this listener."
+    },
+    "abort": {
+      "reconfigure_successful": "Configuration updated. The proxy will restart."
+    }
+  },
+  "entity": {
+    "valve": {
+      "water": {
+        "name": "Water"
+      }
+    },
+    "binary_sensor": {
+      "device_connected": {
+        "name": "Device connected"
+      },
+      "cloud_connected": {
+        "name": "Cloud connected"
+      }
+    },
+    "sensor": {
+      "water_total": {
+        "name": "Water total"
+      },
+      "last_response": {
+        "name": "Last response"
+      },
+      "water_meter": {
+        "name": "Water meter"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Set water meter reading",
+        "description": "Enter the current water meter reading in whole liters, or zero to count usage from now. The device must be connected. Future consumption is added automatically. This changes only the local reading and does not restart the proxy or write to the device.",
+        "data": {
+          "meter_reading": "Water meter reading (L)"
+        }
+      }
+    },
+    "error": {
+      "invalid_reading": "Enter a nonnegative whole number of liters.",
+      "counter_unavailable": "Cannot read a fresh device counter. Check the device connection and try again."
+    },
+    "abort": {
+      "integration_unavailable": "The integration must be running to set the water meter reading."
+    }
+  }
+}
