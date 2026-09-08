@@ -55,20 +55,21 @@ def topic_prefix(value: str) -> str:
 
 @callback
 def schema(values: dict) -> vol.Schema:
+    """Use field types that Home Assistant can serialize for the frontend."""
     return vol.Schema(
         {
-            vol.Required(CONF_TARGET_HOST): host,
+            vol.Required(CONF_TARGET_HOST): cv.string,
             vol.Required(CONF_TARGET_PORT): cv.port,
             vol.Required(CONF_LISTEN_PORT): cv.port,
             vol.Required(
                 CONF_LISTEN_HOST, default=values.get(CONF_LISTEN_HOST, "0.0.0.0")
-            ): bind_address,
+            ): cv.string,
             vol.Required(
                 CONF_MQTT_ENABLED, default=values.get(CONF_MQTT_ENABLED, False)
             ): cv.boolean,
             vol.Required(
                 CONF_MQTT_PREFIX, default=values.get(CONF_MQTT_PREFIX, "evodnik")
-            ): topic_prefix,
+            ): cv.string,
         }
     )
 
@@ -126,13 +127,23 @@ class EvodnikConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         values = dict(current.data) if current else {}
         errors = {}
         if user_input is not None:
-            values = user_input
-            if error := await self._validate(user_input, current):
-                errors["base"] = error
-            elif current:
-                return self.async_update_reload_and_abort(current, data=user_input)
-            else:
-                return self.async_create_entry(title="eVodnik", data=user_input)
+            values = dict(user_input)
+            for key, validator, error_key in (
+                (CONF_TARGET_HOST, host, "invalid_host"),
+                (CONF_LISTEN_HOST, bind_address, "invalid_bind_address"),
+                (CONF_MQTT_PREFIX, topic_prefix, "invalid_mqtt_prefix"),
+            ):
+                try:
+                    values[key] = validator(values[key])
+                except vol.Invalid:
+                    errors[key] = error_key
+            if not errors:
+                if error := await self._validate(values, current):
+                    errors["base"] = error
+                elif current:
+                    return self.async_update_reload_and_abort(current, data=values)
+                else:
+                    return self.async_create_entry(title="eVodnik", data=values)
         return self.async_show_form(
             step_id=step,
             data_schema=self.add_suggested_values_to_schema(schema(values), values),

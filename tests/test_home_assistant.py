@@ -84,9 +84,6 @@ async def test_duplicate_entries_and_mqtt_prefix(hass, entry_data, unused_tcp_po
     [
         ("listen_port", -1),
         ("target_port", 65536),
-        ("mqtt_prefix", "bad/#"),
-        ("listen_host", "hostname.test"),
-        ("target_host", "https://vendor.example.test"),
     ],
 )
 def test_invalid_inputs(entry_data, key, value):

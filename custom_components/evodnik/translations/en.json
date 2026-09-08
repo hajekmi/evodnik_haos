@@ -28,6 +28,9 @@
       }
     },
     "error": {
+      "invalid_host": "Enter an IP address or host name without a URL scheme.",
+      "invalid_bind_address": "Enter a local IPv4 or IPv6 address.",
+      "invalid_mqtt_prefix": "Enter a nonempty MQTT topic prefix without wildcards.",
       "listener_in_use": "Cannot bind this listener. Check the address, port, and other entries.",
       "mqtt_prefix_in_use": "Another eVodnik entry uses this MQTT prefix.",
       "proxy_loop": "The target must not point back to this listener."
